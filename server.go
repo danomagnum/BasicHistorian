@@ -100,6 +100,16 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		rotateHours = 24
 	}
 
+	maxTotalSize, err := strconv.ParseInt(r.FormValue("max_total_size"), 10, 64)
+	if err != nil || maxTotalSize < 0 {
+		maxTotalSize = 0
+	}
+
+	maxFileCount, err := strconv.Atoi(r.FormValue("max_file_count"))
+	if err != nil || maxFileCount < 0 {
+		maxFileCount = 0
+	}
+
 	outputDir := r.FormValue("output_dir")
 	if outputDir == "" {
 		outputDir = "data"
@@ -110,6 +120,8 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		MaxFileSizeBytes:    maxSize,
 		OutputDir:           outputDir,
 		RotateIntervalHours: rotateHours,
+		MaxTotalSizeBytes:   maxTotalSize,
+		MaxFileCount:        maxFileCount,
 	}
 
 	if err := SaveConfig(cfg); err != nil {

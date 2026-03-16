@@ -23,6 +23,7 @@ func runHistorian(ch <-chan [496]byte) {
 			continue
 		}
 		done := writeFile(ch, cfg)
+		cleanupDataDir(cfg)
 		if done {
 			return
 		}

@@ -22,6 +22,8 @@ type Config struct {
 	MaxFileSizeBytes    int64      `json:"max_file_size_bytes"`
 	OutputDir           string     `json:"output_dir"`
 	RotateIntervalHours float64    `json:"rotate_interval_hours"` // 0 = disabled
+	MaxTotalSizeBytes   int64      `json:"max_total_size_bytes"`  // 0 = disabled
+	MaxFileCount        int        `json:"max_file_count"`        // 0 = disabled
 }
 
 var (
@@ -75,6 +77,8 @@ func defaults() Config {
 		MaxFileSizeBytes:    100 * 1024 * 1024, // 100 MB
 		OutputDir:           "data",
 		RotateIntervalHours: 24,
+		MaxTotalSizeBytes:   0,
+		MaxFileCount:        0,
 		Fields:              []FieldDef{},
 	}
 }
