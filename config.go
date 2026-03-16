@@ -77,8 +77,8 @@ func defaults() Config {
 		MaxFileSizeBytes:    100 * 1024 * 1024, // 100 MB
 		OutputDir:           "data",
 		RotateIntervalHours: 24,
-		MaxTotalSizeBytes:   0,
-		MaxFileCount:        0,
+		MaxTotalSizeBytes:   10 * 1024 * 1024 * 1024, // 10 GB
+		MaxFileCount:        365,
 		Fields:              []FieldDef{},
 	}
 }
