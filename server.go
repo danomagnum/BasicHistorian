@@ -55,6 +55,7 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 	names := r.Form["fields_name"]
 	types := r.Form["fields_type"]
 	offsets := r.Form["fields_offset"]
+	bitpos := r.Form["fields_bitpos"]
 
 	n := len(names)
 	if len(types) < n {
@@ -74,10 +75,18 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			off = 0
 		}
+		bp := 0
+		if i < len(bitpos) {
+			bp, err = strconv.Atoi(bitpos[i])
+			if err != nil || bp < 0 || bp > 7 {
+				bp = 0
+			}
+		}
 		fields = append(fields, FieldDef{
 			Name:   name,
 			Type:   types[i],
 			Offset: off,
+			BitPos: bp,
 		})
 	}
 

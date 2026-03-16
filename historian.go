@@ -159,7 +159,7 @@ func encodeValue(data []byte, f FieldDef) parquet.Value {
 		}
 	case "bool":
 		if off < len(data) {
-			return parquet.BooleanValue(data[off] != 0)
+			return parquet.BooleanValue((data[off]>>f.BitPos)&1 == 1)
 		}
 	}
 	return parquet.NullValue()

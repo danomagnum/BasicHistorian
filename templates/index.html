@@ -51,14 +51,14 @@
   <p>Map named fields onto the 496-byte output buffer. Offsets are zero-based byte positions.</p>
   <table class="fields">
     <thead>
-      <tr><th>Name</th><th>Type</th><th>Offset (bytes)</th><th></th></tr>
+      <tr><th>Name</th><th>Type</th><th>Offset (bytes)</th><th>Bit (bool only)</th><th></th></tr>
     </thead>
     <tbody id="fields-body">
       {{range .Config.Fields}}
       <tr>
         <td><input type="text" name="fields_name" value="{{.Name}}"></td>
         <td>
-          <select name="fields_type">
+          <select name="fields_type" onchange="toggleBitPos(this)">
             <option value="sint"    {{if eq .Type "sint"   }}selected{{end}}>sint    (1 byte, signed)</option>
             <option value="int"     {{if eq .Type "int"    }}selected{{end}}>int     (2 bytes, signed)</option>
             <option value="dint"    {{if eq .Type "dint"   }}selected{{end}}>dint    (4 bytes, signed)</option>
@@ -68,6 +68,7 @@
           </select>
         </td>
         <td><input type="number" name="fields_offset" value="{{.Offset}}" min="0" max="499"></td>
+        <td><input type="number" name="fields_bitpos" value="{{.BitPos}}" min="0" max="7" style="width:60px;{{if ne .Type "bool"}} display:none;{{end}}"></td>
         <td><button type="button" class="btn" onclick="this.closest('tr').remove()">Remove</button></td>
       </tr>
       {{end}}
@@ -100,7 +101,7 @@ function addFieldRow() {
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td><input type="text" name="fields_name" value=""></td>' +
-    '<td><select name="fields_type">' +
+    '<td><select name="fields_type" onchange="toggleBitPos(this)">' +
       '<option value="sint">sint (1 byte, signed)</option>' +
       '<option value="int">int (2 bytes, signed)</option>' +
       '<option value="dint" selected>dint (4 bytes, signed)</option>' +
@@ -109,8 +110,13 @@ function addFieldRow() {
       '<option value="bool">bool (1 byte)</option>' +
     '</select></td>' +
     '<td><input type="number" name="fields_offset" value="0" min="0" max="499"></td>' +
+    '<td><input type="number" name="fields_bitpos" value="0" min="0" max="7" style="width:60px; display:none;"></td>' +
     '<td><button type="button" class="btn" onclick="this.closest(\'tr\').remove()">Remove</button></td>';
   tbody.appendChild(tr);
+}
+function toggleBitPos(sel) {
+  var bitInput = sel.closest('tr').querySelector('input[name="fields_bitpos"]');
+  bitInput.style.display = sel.value === 'bool' ? '' : 'none';
 }
 </script>
 </body>

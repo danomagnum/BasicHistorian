@@ -11,8 +11,9 @@ const filePath = "config.json"
 // FieldDef describes how to decode one named field from the raw IO output bytes.
 type FieldDef struct {
 	Name   string `json:"name"`
-	Type   string `json:"type"`   // sint, int, dint, float32, real, bool
-	Offset int    `json:"offset"` // byte offset into the 496-byte output buffer
+	Type   string `json:"type"`    // sint, int, dint, float32, real, bool
+	Offset int    `json:"offset"`  // byte offset into the output buffer
+	BitPos int    `json:"bit_pos"` // bit position within the byte (0-7), only used for bool
 }
 
 // Config is the full application configuration.
