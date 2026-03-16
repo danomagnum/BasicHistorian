@@ -95,15 +95,21 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		maxSize = 100 * 1024 * 1024
 	}
 
+	rotateHours, err := strconv.ParseFloat(r.FormValue("rotate_interval_hours"), 64)
+	if err != nil || rotateHours < 0 {
+		rotateHours = 24
+	}
+
 	outputDir := r.FormValue("output_dir")
 	if outputDir == "" {
 		outputDir = "data"
 	}
 
 	cfg := Config{
-		Fields:           fields,
-		MaxFileSizeBytes: maxSize,
-		OutputDir:        outputDir,
+		Fields:              fields,
+		MaxFileSizeBytes:    maxSize,
+		OutputDir:           outputDir,
+		RotateIntervalHours: rotateHours,
 	}
 
 	if err := SaveConfig(cfg); err != nil {

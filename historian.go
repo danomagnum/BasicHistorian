@@ -60,10 +60,22 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 	log.Printf("historian: writing to %s", fname)
 	numCols := len(schema.Columns())
 
+	// Set up optional time-based rotation ticker.
+	var rotateCh <-chan time.Time
+	if cfg.RotateIntervalHours > 0 {
+		ticker := time.NewTicker(time.Duration(cfg.RotateIntervalHours * float64(time.Hour)))
+		defer ticker.Stop()
+		rotateCh = ticker.C
+	}
+
 	for {
 		select {
 		case <-ChangeCh:
 			log.Printf("historian: config changed - rotating file")
+			return false
+
+		case <-rotateCh:
+			log.Printf("historian: time-based rotation after %.4g hours", cfg.RotateIntervalHours)
 			return false
 
 		case raw, ok := <-ch:

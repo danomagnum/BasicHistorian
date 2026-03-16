@@ -46,6 +46,11 @@
     <input type="number" id="max_file_size" name="max_file_size"
            value="{{.Config.MaxFileSizeBytes}}" min="1">
   </p>
+  <p>
+    <label for="rotate_interval_hours">Rotate Interval (hours, 0=disabled):</label>
+    <input type="number" id="rotate_interval_hours" name="rotate_interval_hours"
+           value="{{.Config.RotateIntervalHours}}" min="0" step="0.5">
+  </p>
 
   <h2>Field Definitions</h2>
   <p>Map named fields onto the 496-byte output buffer. Offsets are zero-based byte positions.</p>

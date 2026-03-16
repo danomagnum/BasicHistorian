@@ -18,9 +18,10 @@ type FieldDef struct {
 
 // Config is the full application configuration.
 type Config struct {
-	Fields           []FieldDef `json:"fields"`
-	MaxFileSizeBytes int64      `json:"max_file_size_bytes"`
-	OutputDir        string     `json:"output_dir"`
+	Fields              []FieldDef `json:"fields"`
+	MaxFileSizeBytes    int64      `json:"max_file_size_bytes"`
+	OutputDir           string     `json:"output_dir"`
+	RotateIntervalHours float64    `json:"rotate_interval_hours"` // 0 = disabled
 }
 
 var (
@@ -71,8 +72,9 @@ func GetConfig() Config {
 
 func defaults() Config {
 	return Config{
-		MaxFileSizeBytes: 100 * 1024 * 1024, // 100 MB
-		OutputDir:        "data",
-		Fields:           []FieldDef{},
+		MaxFileSizeBytes:    100 * 1024 * 1024, // 100 MB
+		OutputDir:           "data",
+		RotateIntervalHours: 24,
+		Fields:              []FieldDef{},
 	}
 }
