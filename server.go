@@ -119,18 +119,24 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		maxFileCount = 0
 	}
 
+	flushSecs, err := strconv.ParseFloat(r.FormValue("flush_interval_seconds"), 64)
+	if err != nil || flushSecs < 0 {
+		flushSecs = 60
+	}
+
 	outputDir := r.FormValue("output_dir")
 	if outputDir == "" {
 		outputDir = "data"
 	}
 
 	cfg := Config{
-		Fields:              fields,
-		MaxFileSizeBytes:    maxSize,
-		OutputDir:           outputDir,
-		RotateIntervalHours: rotateHours,
-		MaxTotalSizeBytes:   maxTotalSize,
-		MaxFileCount:        maxFileCount,
+		Fields:               fields,
+		MaxFileSizeBytes:     maxSize,
+		OutputDir:            outputDir,
+		RotateIntervalHours:  rotateHours,
+		MaxTotalSizeBytes:    maxTotalSize,
+		MaxFileCount:         maxFileCount,
+		FlushIntervalSeconds: flushSecs,
 	}
 
 	if err := SaveConfig(cfg); err != nil {

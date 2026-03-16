@@ -18,12 +18,13 @@ type FieldDef struct {
 
 // Config is the full application configuration.
 type Config struct {
-	Fields              []FieldDef `json:"fields"`
-	MaxFileSizeBytes    int64      `json:"max_file_size_bytes"`
-	OutputDir           string     `json:"output_dir"`
-	RotateIntervalHours float64    `json:"rotate_interval_hours"` // 0 = disabled
-	MaxTotalSizeBytes   int64      `json:"max_total_size_bytes"`  // 0 = disabled
-	MaxFileCount        int        `json:"max_file_count"`        // 0 = disabled
+	Fields               []FieldDef `json:"fields"`
+	MaxFileSizeBytes     int64      `json:"max_file_size_bytes"`
+	OutputDir            string     `json:"output_dir"`
+	RotateIntervalHours  float64    `json:"rotate_interval_hours"`  // 0 = disabled
+	MaxTotalSizeBytes    int64      `json:"max_total_size_bytes"`   // 0 = disabled
+	MaxFileCount         int        `json:"max_file_count"`         // 0 = disabled
+	FlushIntervalSeconds float64    `json:"flush_interval_seconds"` // 0 = disabled
 }
 
 var (
@@ -76,11 +77,12 @@ func GetConfig() Config {
 
 func defaults() Config {
 	return Config{
-		MaxFileSizeBytes:    100 * 1024 * 1024, // 100 MB
-		OutputDir:           "data",
-		RotateIntervalHours: 24,
-		MaxTotalSizeBytes:   10 * 1024 * 1024 * 1024, // 10 GB
-		MaxFileCount:        365,
-		Fields:              []FieldDef{},
+		MaxFileSizeBytes:     100 * 1024 * 1024, // 100 MB
+		OutputDir:            "data",
+		RotateIntervalHours:  24,
+		MaxTotalSizeBytes:    10 * 1024 * 1024 * 1024, // 10 GB
+		MaxFileCount:         365,
+		FlushIntervalSeconds: 60,
+		Fields:               []FieldDef{},
 	}
 }

@@ -65,6 +65,11 @@
     <input type="number" id="max_file_count" name="max_file_count"
            value="{{.Config.MaxFileCount}}" min="0">
   </p>
+  <p>
+    <label for="flush_interval_seconds">Flush Interval (seconds, 0=disabled):</label>
+    <input type="number" id="flush_interval_seconds" name="flush_interval_seconds"
+           value="{{.Config.FlushIntervalSeconds}}" min="0" step="1">
+  </p>
 
   <h2>Field Definitions</h2>
   <p>Map named fields onto the 496-byte output buffer. Offsets are zero-based byte positions.</p>

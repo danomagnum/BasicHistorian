@@ -69,6 +69,14 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 		rotateCh = ticker.C
 	}
 
+	// Set up periodic flush ticker.
+	var flushCh <-chan time.Time
+	if cfg.FlushIntervalSeconds > 0 {
+		ft := time.NewTicker(time.Duration(cfg.FlushIntervalSeconds * float64(time.Second)))
+		defer ft.Stop()
+		flushCh = ft.C
+	}
+
 	for {
 		select {
 		case <-ChangeCh:
@@ -82,6 +90,11 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 		case <-rotateCh:
 			log.Printf("historian: time-based rotation after %.4g hours", cfg.RotateIntervalHours)
 			return false
+
+		case <-flushCh:
+			if err := w.Flush(); err != nil {
+				log.Printf("historian: flush: %v", err)
+			}
 
 		case raw, ok := <-ch:
 			if !ok {
