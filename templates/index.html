@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BasicHistorian2</title>
+  <style>
+    body { font-family: sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 8px; }
+    h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 28px; }
+    p { margin: 8px 0; }
+    label { display: inline-block; min-width: 200px; }
+    input[type=text], input[type=number] { padding: 4px 6px; width: 260px; box-sizing: border-box; }
+    select { padding: 4px 6px; }
+    .info-box { background: #f4f4f4; border: 1px solid #ddd; padding: 10px 14px; border-radius: 4px; margin: 8px 0; }
+    table.fields { border-collapse: collapse; width: 100%; margin-top: 8px; }
+    table.fields th, table.fields td { border: 1px solid #ccc; padding: 6px 10px; }
+    table.fields th { background: #f0f0f0; text-align: left; }
+    table.files  { border-collapse: collapse; width: 100%; margin-top: 8px; }
+    table.files  th, table.files  td { border: 1px solid #ccc; padding: 6px 10px; }
+    table.files  th { background: #f0f0f0; text-align: left; }
+    .btn  { cursor: pointer; padding: 4px 10px; }
+    .save-btn { padding: 8px 28px; font-size: 1.05em; margin-top: 16px; cursor: pointer; }
+    .msg  { color: #2a7a2a; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<h1>BasicHistorian2</h1>
+
+{{if .Message}}<p class="msg">&#10003; {{.Message}}</p>{{end}}
+
+<form method="POST" action="/config">
+
+  <h2>IO Connection</h2>
+  <div class="info-box">
+    <strong>Input (to PLC):</strong> 4 bytes &nbsp;&nbsp;&nbsp;
+    <strong>Output (from PLC):</strong> 500 bytes
+  </div>
+
+  <h2>Historian Settings</h2>
+  <p>
+    <label for="output_dir">Output Directory:</label>
+    <input type="text" id="output_dir" name="output_dir" value="{{.Config.OutputDir}}">
+  </p>
+  <p>
+    <label for="max_file_size">Max File Size (bytes):</label>
+    <input type="number" id="max_file_size" name="max_file_size"
+           value="{{.Config.MaxFileSizeBytes}}" min="1">
+  </p>
+
+  <h2>Field Definitions</h2>
+  <p>Map named fields onto the 500-byte output buffer. Offsets are zero-based byte positions.</p>
+  <table class="fields">
+    <thead>
+      <tr><th>Name</th><th>Type</th><th>Offset (bytes)</th><th></th></tr>
+    </thead>
+    <tbody id="fields-body">
+      {{range .Config.Fields}}
+      <tr>
+        <td><input type="text" name="fields_name" value="{{.Name}}"></td>
+        <td>
+          <select name="fields_type">
+            <option value="sint"    {{if eq .Type "sint"   }}selected{{end}}>sint    (1 byte, signed)</option>
+            <option value="int"     {{if eq .Type "int"    }}selected{{end}}>int     (2 bytes, signed)</option>
+            <option value="dint"    {{if eq .Type "dint"   }}selected{{end}}>dint    (4 bytes, signed)</option>
+            <option value="float32" {{if eq .Type "float32"}}selected{{end}}>float32 (4 bytes)</option>
+            <option value="real"    {{if eq .Type "real"   }}selected{{end}}>real    (4 bytes, alias float32)</option>
+            <option value="bool"    {{if eq .Type "bool"   }}selected{{end}}>bool    (1 byte)</option>
+          </select>
+        </td>
+        <td><input type="number" name="fields_offset" value="{{.Offset}}" min="0" max="499"></td>
+        <td><button type="button" class="btn" onclick="this.closest('tr').remove()">Remove</button></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  <br>
+  <button type="button" class="btn" onclick="addFieldRow()">+ Add Field</button>
+  <br>
+  <button type="submit" class="save-btn">Save Configuration</button>
+
+</form>
+
+<h2>Data Files</h2>
+{{if .Files}}
+<table class="files">
+  <thead><tr><th>File</th><th>Size</th><th>Last Modified</th></tr></thead>
+  <tbody>
+    {{range .Files}}
+    <tr><td>{{.Name}}</td><td>{{.Size}}</td><td>{{.ModTime}}</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p>No parquet files found in <em>{{.Config.OutputDir}}</em>.</p>
+{{end}}
+
+<script>
+function addFieldRow() {
+  var tbody = document.getElementById('fields-body');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" name="fields_name" value=""></td>' +
+    '<td><select name="fields_type">' +
+      '<option value="sint">sint (1 byte, signed)</option>' +
+      '<option value="int">int (2 bytes, signed)</option>' +
+      '<option value="dint" selected>dint (4 bytes, signed)</option>' +
+      '<option value="float32">float32 (4 bytes)</option>' +
+      '<option value="real">real (4 bytes, alias float32)</option>' +
+      '<option value="bool">bool (1 byte)</option>' +
+    '</select></td>' +
+    '<td><input type="number" name="fields_offset" value="0" min="0" max="499"></td>' +
+    '<td><button type="button" class="btn" onclick="this.closest(\'tr\').remove()">Remove</button></td>';
+  tbody.appendChild(tr);
+}
+</script>
+</body>
+</html>
