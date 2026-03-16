@@ -29,11 +29,12 @@ type pageData struct {
 	Message string
 }
 
-// Serve starts the HTTP server on addr (e.g. ":8080"). Blocks until error.
+// serveWeb starts the HTTP server on addr (e.g. ":8080"). Blocks until error.
 func serveWeb(addr string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleIndex)
 	mux.HandleFunc("POST /config", handleSaveConfig)
+	mux.HandleFunc("POST /rotate", handleRotate)
 	log.Printf("web: listening on %s", addr)
 	return http.ListenAndServe(addr, mux)
 }
@@ -44,6 +45,14 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, pd); err != nil {
 		log.Printf("web: template error: %v", err)
 	}
+}
+
+func handleRotate(w http.ResponseWriter, r *http.Request) {
+	select {
+	case RotateCh <- struct{}{}:
+	default:
+	}
+	http.Redirect(w, r, "/?saved=rotated", http.StatusSeeOther)
 }
 
 func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
@@ -135,8 +144,10 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 func buildPageData(savedMsg string) pageData {
 	cfg := GetConfig()
 	pd := pageData{Config: cfg}
-	if savedMsg != "" {
+	if savedMsg == "1" {
 		pd.Message = "Configuration saved."
+	} else if savedMsg == "rotated" {
+		pd.Message = "File rotation requested."
 	}
 	entries, err := os.ReadDir(cfg.OutputDir)
 	if err == nil {

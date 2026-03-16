@@ -32,6 +32,8 @@ var (
 	// ChangeCh is signaled (non-blocking) every time the config is saved.
 	// The historian selects on this to rotate to a new parquet file immediately.
 	ChangeCh = make(chan struct{}, 1)
+	// RotateCh is signaled by the web UI "Rotate Now" button.
+	RotateCh = make(chan struct{}, 1)
 )
 
 func LoadConfig() error {

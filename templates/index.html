@@ -28,6 +28,10 @@
 
 {{if .Message}}<p class="msg">&#10003; {{.Message}}</p>{{end}}
 
+<form method="POST" action="/rotate" style="display:inline;">
+  <button type="submit" class="btn" style="background:#d9534f;color:#fff;padding:6px 18px;">&#9654; Rotate File Now</button>
+</form>
+
 <form method="POST" action="/config">
 
   <h2>IO Connection</h2>
