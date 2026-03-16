@@ -46,11 +46,8 @@ func main() {
 	// machine's IP: 496 bytes output (from PLC), 4 bytes input (to PLC).
 	go func() {
 		r := gologix.PathRouter{}
-		path, err := gologix.ParsePath("1,0")
-		if err != nil {
-			log.Fatalf("io: parse path: %v", err)
-		}
-		r.Handle(path.Bytes(), provider)
+		path := []byte{52, 4}
+		r.Handle(path, provider)
 		s := gologix.NewServer(&r)
 		log.Printf("io: starting gologix server (TCP 44818 / UDP 2222)")
 		if err := s.Serve(); err != nil {
@@ -59,7 +56,7 @@ func main() {
 		}
 	}()
 
-	if err := serveWeb(":8080"); err != nil {
+	if err := serveWeb(":8000"); err != nil {
 		log.Fatalf("web: %v", err)
 	}
 }
