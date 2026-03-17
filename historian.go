@@ -114,7 +114,7 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 
 func buildSchema(cfg Config) (*parquet.Schema, map[string]int, error) {
 	group := parquet.Group{
-		"timestamp": parquet.Int(64),
+		"timestamp": parquet.Timestamp(parquet.Nanosecond),
 	}
 	for _, f := range cfg.Fields {
 		node, err := nodeForType(f.Type)
