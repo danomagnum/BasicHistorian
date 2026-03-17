@@ -87,6 +87,10 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 			log.Printf("historian: manual rotation requested")
 			return false
 
+		case <-ShutdownCh:
+			log.Printf("historian: shutdown signal - closing file")
+			return true
+
 		case <-rotateCh:
 			log.Printf("historian: time-based rotation after %.4g hours", cfg.RotateIntervalHours)
 			return false

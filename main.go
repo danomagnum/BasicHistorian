@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/danomagnum/gologix"
 )
@@ -39,7 +42,27 @@ func main() {
 		}
 	}()
 
-	go runHistorian(ioCh)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		runHistorian(ioCh)
+	}()
+
+	// Catch SIGINT / SIGTERM and gracefully close the active parquet file.
+	go func() {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigCh
+		log.Printf("main: received signal %s - shutting down", sig)
+		select {
+		case ShutdownCh <- struct{}{}:
+		default:
+		}
+		wg.Wait()
+		log.Printf("main: historian stopped - exiting")
+		os.Exit(0)
+	}()
 
 	// Start the gologix EIP server.
 	// Configure a Generic Ethernet Module in the PLC IO tree pointing at this

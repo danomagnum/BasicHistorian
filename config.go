@@ -35,6 +35,8 @@ var (
 	ChangeCh = make(chan struct{}, 1)
 	// RotateCh is signaled by the web UI "Rotate Now" button.
 	RotateCh = make(chan struct{}, 1)
+	// ShutdownCh is signaled when the OS sends SIGINT or SIGTERM.
+	ShutdownCh = make(chan struct{}, 1)
 )
 
 func LoadConfig() error {
