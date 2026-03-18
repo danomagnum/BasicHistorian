@@ -61,12 +61,18 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 	log.Printf("historian: writing to %s", fname)
 	numCols := len(schema.Columns())
 
-	// Set up optional time-based rotation ticker.
+	// Set up optional time-based rotation timer, aligned to the configured base time.
+	// Rotations fire at base_time + n*interval, so a manual rotation mid-interval
+	// still causes the next auto-rotation at the next scheduled boundary.
 	var rotateCh <-chan time.Time
 	if cfg.RotateIntervalHours > 0 {
-		ticker := time.NewTicker(time.Duration(cfg.RotateIntervalHours * float64(time.Hour)))
-		defer ticker.Stop()
-		rotateCh = ticker.C
+		interval := time.Duration(cfg.RotateIntervalHours * float64(time.Hour))
+		bh, bm := parseBaseTime(cfg.RotateBaseTime)
+		next := nextRotationTime(time.Now(), interval, bh, bm)
+		log.Printf("historian: next scheduled rotation at %s", next.Format("2006-01-02 15:04:05"))
+		timer := time.NewTimer(time.Until(next))
+		defer timer.Stop()
+		rotateCh = timer.C
 	}
 
 	// Set up periodic flush ticker.
@@ -92,7 +98,8 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 			return true
 
 		case <-rotateCh:
-			log.Printf("historian: time-based rotation after %.4g hours", cfg.RotateIntervalHours)
+			log.Printf("historian: scheduled time-based rotation (interval %.4g hours, base %q)",
+				cfg.RotateIntervalHours, cfg.RotateBaseTime)
 			return false
 
 		case <-flushCh:
@@ -114,6 +121,23 @@ func writeFile(ch <-chan [496]byte, cfg Config) (done bool) {
 			}
 		}
 	}
+}
+
+// nextRotationTime returns the next rotation boundary after now.
+// The schedule is anchored at baseHour:baseMinute local time and repeats every interval.
+// Example: base=00:00, interval=1h → boundaries at 00:00, 01:00, 02:00, …
+// A manual rotation at 00:20 still triggers the next auto-rotation at 01:00, not 01:20.
+func nextRotationTime(now time.Time, interval time.Duration, baseHour, baseMinute int) time.Time {
+	loc := now.Location()
+	y, m, d := now.Date()
+	base := time.Date(y, m, d, baseHour, baseMinute, 0, 0, loc)
+	// If today's base is still in the future, use yesterday's base as the anchor.
+	if now.Before(base) {
+		base = base.Add(-24 * time.Hour)
+	}
+	elapsed := now.Sub(base)
+	n := int64(elapsed / interval)
+	return base.Add(time.Duration(n+1) * interval)
 }
 
 func buildSchema(cfg Config) (*parquet.Schema, map[string]int, error) {

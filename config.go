@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 )
@@ -22,6 +23,7 @@ type Config struct {
 	MaxFileSizeBytes     int64      `json:"max_file_size_bytes"`
 	OutputDir            string     `json:"output_dir"`
 	RotateIntervalHours  float64    `json:"rotate_interval_hours"`  // 0 = disabled
+	RotateBaseTime       string     `json:"rotate_base_time"`       // "HH:MM" anchor for interval grid, default "00:00"
 	MaxTotalSizeBytes    int64      `json:"max_total_size_bytes"`   // 0 = disabled
 	MaxFileCount         int        `json:"max_file_count"`         // 0 = disabled
 	FlushIntervalSeconds float64    `json:"flush_interval_seconds"` // 0 = disabled
@@ -82,9 +84,26 @@ func defaults() Config {
 		MaxFileSizeBytes:     100 * 1024 * 1024, // 100 MB
 		OutputDir:            "data",
 		RotateIntervalHours:  24,
+		RotateBaseTime:       "00:00",
 		MaxTotalSizeBytes:    10 * 1024 * 1024 * 1024, // 10 GB
 		MaxFileCount:         365,
 		FlushIntervalSeconds: 60,
 		Fields:               []FieldDef{},
 	}
+}
+
+// parseBaseTime parses an "HH:MM" string into hour and minute.
+// An empty string defaults to 00:00. Errors also default to 00:00.
+func parseBaseTime(s string) (hour, minute int) {
+	if s == "" {
+		return 0, 0
+	}
+	var h, m int
+	if _, err := fmt.Sscanf(s, "%d:%d", &h, &m); err != nil {
+		return 0, 0
+	}
+	if h < 0 || h > 23 || m < 0 || m > 59 {
+		return 0, 0
+	}
+	return h, m
 }

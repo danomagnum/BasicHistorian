@@ -124,6 +124,14 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		flushSecs = 60
 	}
 
+	rotateBase := r.FormValue("rotate_base_time")
+	if rotateBase == "" {
+		rotateBase = "00:00"
+	}
+	// Normalise: re-format so the stored value is always canonical "HH:MM".
+	bh, bm := parseBaseTime(rotateBase)
+	rotateBase = fmt.Sprintf("%02d:%02d", bh, bm)
+
 	outputDir := r.FormValue("output_dir")
 	if outputDir == "" {
 		outputDir = "data"
@@ -134,6 +142,7 @@ func handleSaveConfig(w http.ResponseWriter, r *http.Request) {
 		MaxFileSizeBytes:     maxSize,
 		OutputDir:            outputDir,
 		RotateIntervalHours:  rotateHours,
+		RotateBaseTime:       rotateBase,
 		MaxTotalSizeBytes:    maxTotalSize,
 		MaxFileCount:         maxFileCount,
 		FlushIntervalSeconds: flushSecs,
